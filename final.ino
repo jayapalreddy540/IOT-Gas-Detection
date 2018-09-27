@@ -86,42 +86,4 @@ void loop() {
   
 }
 
-/*void sendSMS(String number,String message)
-{
-  // Make a TCP connection to remote host
-  if (client.connect(server, 80))
-  {
 
-    //should look like this...
-    //api.thingspeak.com/apps/thinghttp/send_request?api_key={api key}&number={send to number}&message={text body}
-
-    client.print("GET /apps/thinghttp/send_request?api_key=");
-    client.print(SMSapiKey);
-    client.print("&number=");
-    client.print(number);
-    client.print("&message=");
-    client.print(message);
-    client.println(" HTTP/1.1");
-    client.print("Host: ");
-    client.println(server);
-    client.println("Connection: close");
-    client.println();
-  }
-  else
-  {
-    Serial.println(F("Connection failed"));
-  } 
-
-  // Check for a response from the server, and route it
-  // out the serial port.
-  while (client.connected())
-  {
-    if ( client.available() )
-    {
-      char c = client.read();
-      Serial.print(c);
-    }      
-  }
-  Serial.println();
-  client.stop();
-}*/
