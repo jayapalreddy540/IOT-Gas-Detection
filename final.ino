@@ -9,12 +9,16 @@ const char* ssid="hello";   //wifi-ssid
 const char* password="1234567890";  // ssid password
 char* server="api.thinkspeak.com";
 unsigned long channelid = 577841;
+//const String SMSapiKey="5YM3MNH0AERWQLJ3";
+//const String sendNumber="7036299791";
 
  WiFiClient client;
 
 //unsigned long lastUpdate;
 float GAS_AO = 0; 
 float STATE = 0;
+int data2=0;
+int data3=0;
 
 void setup() {
   Serial.begin(9600);
@@ -25,6 +29,7 @@ void setup() {
   pinMode(GAS_AO,INPUT);
   servo.attach(D4);
   servo.write(0);
+  
 }
 
 int connectWifi(){
@@ -42,30 +47,81 @@ int connectWifi(){
     ThingSpeak.begin(client);
   }
 
-int writeTSData(long channelid,unsigned int TSfield1,float data1,char* ReadAPIKey){
-  int writeSuccess=ThingSpeak.writeField(channelid,TSfield1,data1,apiWriteKey);
+int writeTSData(long channelid,unsigned int TSfield1,float data1,unsigned int TSfield2,int data2,unsigned int TSfield3,int data3,char* ReadAPIKey){
+  //int writeSuccess=ThingSpeak.writeField(channelid,TSfield1,data1,apiWriteKey);  //for single value
+  ThingSpeak.setField(TSfield1,data1);
+  ThingSpeak.setField(TSfield2,data2);
+  ThingSpeak.setField(TSfield3,data3);
+  int writeSuccess=ThingSpeak.writeFields(channelid,apiWriteKey);
   return writeSuccess;
 }
 void loop() {
     STATE = analogRead(GAS_AO); 
      Serial.println(STATE);
-     if(STATE>700)
+     if(STATE>670)
      {
       digitalWrite(D2,HIGH);
+      data2=90;
       servo.write(90);
+      data3=90;
       delay(1000);
       servo.write(0);
       delay(1000);
+      // sendSMS(sendNumber, "Alert!! Gas Leakage in your house");
      }
-     else digitalWrite(D2,LOW);
+     else{
+       digitalWrite(D2,LOW);
+       data2=0;
+       data3=0;
+     }
 
     if(WiFi.status() != WL_CONNECTED)
     {
        connectWifi();  
     }
-     writeTSData(channelid, 1,STATE, apiWriteKey);
-  Serial.println("Waiting 1 seconds to upload next reading...");
+     writeTSData(channelid, 1,STATE,2,data2,3,data3, apiWriteKey);
+  Serial.println("Waiting atmost 3 seconds to upload next reading...");
   Serial.println();
     delay(100);
   
 }
+
+/*void sendSMS(String number,String message)
+{
+  // Make a TCP connection to remote host
+  if (client.connect(server, 80))
+  {
+
+    //should look like this...
+    //api.thingspeak.com/apps/thinghttp/send_request?api_key={api key}&number={send to number}&message={text body}
+
+    client.print("GET /apps/thinghttp/send_request?api_key=");
+    client.print(SMSapiKey);
+    client.print("&number=");
+    client.print(number);
+    client.print("&message=");
+    client.print(message);
+    client.println(" HTTP/1.1");
+    client.print("Host: ");
+    client.println(server);
+    client.println("Connection: close");
+    client.println();
+  }
+  else
+  {
+    Serial.println(F("Connection failed"));
+  } 
+
+  // Check for a response from the server, and route it
+  // out the serial port.
+  while (client.connected())
+  {
+    if ( client.available() )
+    {
+      char c = client.read();
+      Serial.print(c);
+    }      
+  }
+  Serial.println();
+  client.stop();
+}*/
